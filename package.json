@@ -1,0 +1,27 @@
+{
+  "name": "jpd-express-error",
+  "version": "0.1.11",
+  "description": "A utility package for managing standardized error handling in Express microservices with strong typing.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["express", "error-handling", "microservices", "typescript"],
+  "author": "Jonathan Podvin",
+  "license": "ISC",
+  "peerDependencies": {
+    "express": ">=4.17.3"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.0",
+    "typescript": "^5.7.3"
+  }
+}
