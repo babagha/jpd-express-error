@@ -99,4 +99,4 @@ export const ERROR_MESSAGES: Record<ErrorMessage, string> = {
   "File read error": "Error occurred while reading file.",
   "File write error": "Error occurred while writing file.",
   "An error occurred while processing your request": "An unexpected error occurred."
-};
+} as const;

@@ -21,7 +21,7 @@ export type SuccessMessage =
 /**
  * Predefined success messages as a constant object with auto-completion
  */
-export const SUCCESS_MESSAGES: Record<SuccessMessage, string> = {
+export const SUCCESS_MESSAGES = {
   "Resource retrieved successfully": "Resource retrieved successfully.",
   "Resource updated successfully": "Resource updated successfully.",
   "Resource validated successfully": "Resource validated successfully.",
@@ -33,4 +33,4 @@ export const SUCCESS_MESSAGES: Record<SuccessMessage, string> = {
   "Profile updated successfully": "Profile updated successfully.",
   "Resource created successfully": "Resource created successfully.",
   "Resource deleted successfully": "Resource deleted successfully."
-};
+} as const;
