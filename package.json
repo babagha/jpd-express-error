@@ -1,6 +1,6 @@
 {
   "name": "jpd-express-error",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A utility package for managing standardized error handling in Express microservices with strong typing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
