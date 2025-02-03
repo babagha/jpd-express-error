@@ -39,13 +39,8 @@ Use `handleError();` to return a standardized error response.
 /*
   Controller
 */
-
 import { Request, Response } from 'express';
-import { handleError, ApiResponse, AppError } from 'jpd-express-error';
-import { createUserService } from '@/services/userService';
-
-import { Request, Response } from 'express';
-import { handleError, ApiResponse, AppError } from 'jpd-express-error';
+import { handleError, ApiResponse, AppError, SUCCESS, ERROR } from 'jpd-express-error';
 import { createUserService } from '@/services/userService';
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
@@ -53,14 +48,14 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      throw new AppError('Missing required fields', 400);
+      throw new AppError(ERROR.missingRequiredFields, 400);
     }
 
     const userData = { name, email, password };
     const user = await createUserService(userData);
 
     // Send a standardized success response
-    res.status(201).json(ApiResponse.success('User created successfully', user));
+    res.status(201).json(ApiResponse.success(SUCCESS.resourceCreatedSuccessfully, user));
   } catch (error: any) {
     handleError(error, res);
   }
@@ -74,20 +69,23 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 When an error occurs in the database, use `AppError` to propagate it to the service or controller.  
 The controller will catch the error and format it correctly using `handleError()`.  
 
+
+
 #### Example: Throwing an error in a database model  
+
 ```ts
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { AppError } from 'jpd-express-error';
+import { AppError, ERROR } from 'jpd-express-error';
 
 export const store = async (data: Omit<User, "id">): Promise<User> => {
   try {
-    // 1️⃣ Create the resource in the database
-    const response = await prisma.user.create(data);
+    // Create the resource in the database
+    const response = await prisma.user.create({ data });
     return response;
   } catch (error) {
     if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
-        throw new AppError('Resource already exists');
+        throw new AppError(ERROR.resourceAlreadyExists, 409);
       }
     }
     throw error;
@@ -103,58 +101,27 @@ Available Messages
 
 
 ✅ Success Messages
-	•	Resource retrieved successfully
-	•	Resource updated successfully
-	•	Resource validated successfully
-	•	Resource completed successfully
-	•	Operation succeeded
-	•	User logged in successfully
-	•	User logged out successfully
-	•	User registered successfully
-	•	Profile updated successfully
-	•	Resource created successfully
-	•	Resource deleted successfully
+```ts
+import { SUCCESS } from "jpd-express-error";
 
+SUCCESS.resourceRetrievedSuccessfully
+SUCCESS.resourceUpdatedSuccessfully
+SUCCESS.userLoggedInSuccessfully
+SUCCESS.resourceCreatedSuccessfully
+SUCCESS.resourceDeletedSuccessfully
+```
 
 ❌ Error Messages
-	•	Error logging out
-	•	Invalid request
-	•	Missing required fields
-	•	Invalid data format
-	•	Invalid request format
-	•	Unsupported media type
-	•	Too many parameters
-	•	Invalid query parameters
-	•	Cart creation failed
-	•	Unauthorized
-	•	Invalid password
-	•	Invalid token
-	•	Token expired
-	•	Missing token
-	•	Invalid credentials
-	•	Forbidden
-	•	Insufficient permissions
-	•	Access denied
-	•	Resource not found
-	•	User not found
-	•	Cart not found
-	•	Product not found
-	•	User already exists
-	•	Email already in use
-	•	Resource already exists
-	•	Foreign key constraint failed
-	•	Validation error
-	•	Invalid email format
-	•	Password too weak
-	•	Too many requests
-	•	Rate limit exceeded
-	•	Internal server error
-	•	Database connection error
-	•	File upload error
-	•	File deletion error
-	•	File read error
-	•	File write error
-	•	An error occurred while processing your request
+```ts
+import { ERROR } from "jpd-express-error";
+
+ERROR.invalidRequest
+ERROR.missingRequiredFields
+ERROR.unauthorized
+ERROR.resourceNotFound
+ERROR.resourceAlreadyExists
+ERROR.internalServerError
+```
 
 
 ---

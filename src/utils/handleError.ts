@@ -9,12 +9,10 @@
  */
 
 import { Response } from 'express';
-import { ErrorMessage } from '../types/errorMessage';
+import { ERROR, ErrorMessage } from '../types/errorMessage';
 import { ApiResponse } from './apiResponse';
 
 const isDev = process.env.NODE_ENV === 'development';
-
-
 
 /**
  * Formats and sends an HTTP response based on the specified error message.
@@ -33,89 +31,80 @@ const isDev = process.env.NODE_ENV === 'development';
 const handleError = (error: Error, res: Response): void => {
   switch (error.message as ErrorMessage) {
     // 400 Bad Request
-    case 'Error logging out':
-    case 'Invalid request':
-    case 'Missing required fields':
-    case 'Invalid data format':
-    case 'Invalid request format':
-    case 'Unsupported media type':
-    case 'Too many parameters':
-    case 'Invalid query parameters':
-    case 'Cart creation failed':
-      const message400error: ErrorMessage = isDev ? error.message as ErrorMessage : 'An error occurred while processing your request' as ErrorMessage;
-      res.status(400).json(ApiResponse.error(message400error));
+    case ERROR.errorLoggingOut:
+    case ERROR.invalidRequest:
+    case ERROR.missingRequiredFields:
+    case ERROR.invalidDataFormat:
+    case ERROR.invalidRequestFormat:
+    case ERROR.unsupportedMediaType:
+    case ERROR.tooManyParameters:
+    case ERROR.invalidQueryParameters:
+    case ERROR.cartCreationFailed:
+      res.status(400).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.genericError));
       return;
 
     // 401 Unauthorized
-    case 'Unauthorized':
-    case 'Invalid password':
-    case 'Invalid token':
-    case 'Token expired':
-    case 'Missing token':
-    case 'Invalid credentials':
-      const message401error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Unauthorized' as ErrorMessage;
-      res.status(401).json(ApiResponse.error(message401error));
+    case ERROR.unauthorized:
+    case ERROR.invalidPassword:
+    case ERROR.invalidToken:
+    case ERROR.tokenExpired:
+    case ERROR.missingToken:
+    case ERROR.invalidCredentials:
+      res.status(401).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.unauthorized));
       return;
 
     // 403 Forbidden
-    case 'Forbidden':
-    case 'Insufficient permissions':
-    case 'Access denied':
-      const message403error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Forbidden' as ErrorMessage;
-      res.status(403).json(ApiResponse.error(message403error));
+    case ERROR.forbidden:
+    case ERROR.insufficientPermissions:
+    case ERROR.accessDenied:
+      res.status(403).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.forbidden));
       return;
 
     // 404 Not Found
-    case 'User not found':
-    case 'Resource not found':
-    case 'Cart not found':
-    case 'Product not found':
-      const message404error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Resource not found' as ErrorMessage;
-      res.status(404).json(ApiResponse.error(message404error));
+    case ERROR.userNotFound:
+    case ERROR.resourceNotFound:
+    case ERROR.cartNotFound:
+    case ERROR.productNotFound:
+      res.status(404).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.resourceNotFound));
       return;
 
     // 409 Conflict
-    case 'User already exists':
-    case 'Email already in use':
-    case 'Resource already exists':
-    case 'Foreign key constraint failed':
-      const message409error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Resource already exists' as ErrorMessage;
-      res.status(409).json(ApiResponse.error(message409error));
+    case ERROR.userAlreadyExists:
+    case ERROR.emailAlreadyInUse:
+    case ERROR.resourceAlreadyExists:
+    case ERROR.foreignKeyConstraintFailed:
+      res.status(409).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.resourceAlreadyExists));
       return;
 
     // 422 Unprocessable Entity
-    case 'Validation error':
-    case 'Invalid email format':
-    case 'Password too weak':
-      const message422error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Validation error' as ErrorMessage;
-      res.status(422).json(ApiResponse.error(message422error));
+    case ERROR.validationError:
+    case ERROR.invalidEmailFormat:
+    case ERROR.passwordTooWeak:
+      res.status(422).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.validationError));
       return;
 
     // 429 Too Many Requests
-    case 'Too many requests':
-    case 'Rate limit exceeded':
-      const message429error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Too many requests' as ErrorMessage;
-      res.status(429).json(ApiResponse.error(message429error));
+    case ERROR.tooManyRequests:
+    case ERROR.rateLimitExceeded:
+      res.status(429).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.tooManyRequests));
+      return;
+
+    // 500 Internal Server Error
+    case ERROR.internalServerError:
+    case ERROR.databaseConnectionError:
+    case ERROR.fileUploadError:
+    case ERROR.fileDeletionError:
+    case ERROR.fileReadError:
+    case ERROR.fileWriteError:
+      res.status(500).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.internalServerError));
       return;
 
     // 500 Internal Server Error (default case)
-    case 'Internal server error':
-    case 'Database connection error':
-    case 'File upload error':
-    case 'File deletion error':
-    case 'File read error':
-    case 'File write error':
-      const message500error: ErrorMessage = isDev ? error.message as ErrorMessage : 'Internal Server Error' as ErrorMessage;
-      res.status(500).json(ApiResponse.error(message500error));
-      return;
-
+    case ERROR.genericError:
     default:
-      const message500Defaulterror: ErrorMessage = isDev ? error.message as ErrorMessage : 'Internal Server Error' as ErrorMessage;
-      res.status(500).json(ApiResponse.error(message500Defaulterror));
+      res.status(500).json(ApiResponse.error(isDev ? error.message as ErrorMessage : ERROR.genericError));
       return;
   }
 };
-
-
 
 export { handleError };

@@ -1,36 +1,19 @@
-export type SuccessMessage =
-  // 200 OK
-  | 'Resource retrieved successfully'
-  | 'Resource updated successfully'
-  | 'Resource validated successfully'
-  | 'Resource completed successfully'
-  | 'Operation succeeded'
-  | 'User logged in successfully'
-  | 'User logged out successfully'
-  | 'User registered successfully'
-  | 'Profile updated successfully'
-
-  // 201 Created
-  | 'Resource created successfully'
-
-  // 204 No Content
-  | 'Resource deleted successfully';
-
-
-
 /**
  * Predefined success messages as a constant object with auto-completion
  */
-export const SUCCESS_MESSAGES: Record<SuccessMessage, SuccessMessage> = {
-  "Resource retrieved successfully": "Resource retrieved successfully",
-  "Resource updated successfully": "Resource updated successfully",
-  "Resource validated successfully": "Resource validated successfully",
-  "Resource completed successfully": "Resource completed successfully",
-  "Operation succeeded": "Operation succeeded",
-  "User logged in successfully": "User logged in successfully",
-  "User logged out successfully": "User logged out successfully",
-  "User registered successfully": "User registered successfully",
-  "Profile updated successfully": "Profile updated successfully",
-  "Resource created successfully": "Resource created successfully",
-  "Resource deleted successfully": "Resource deleted successfully"
+export const SUCCESS = {
+  resourceRetrievedSuccessfully: "Resource retrieved successfully",
+  resourceUpdatedSuccessfully: "Resource updated successfully",
+  resourceValidatedSuccessfully: "Resource validated successfully",
+  resourceCompletedSuccessfully: "Resource completed successfully",
+  operationSucceeded: "Operation succeeded",
+  userLoggedInSuccessfully: "User logged in successfully",
+  userLoggedOutSuccessfully: "User logged out successfully",
+  userRegisteredSuccessfully: "User registered successfully",
+  profileUpdatedSuccessfully: "Profile updated successfully",
+  resourceCreatedSuccessfully: "Resource created successfully",
+  resourceDeletedSuccessfully: "Resource deleted successfully"
 } as const;
+
+// Definition of the SuccessMessage type based on the values of SUCCESS_MESSAGES
+export type SuccessMessage = typeof SUCCESS[keyof typeof SUCCESS];

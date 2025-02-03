@@ -1,4 +1,4 @@
-import { ErrorMessage } from '../types/errorMessage';
+import { ERROR, ErrorMessage } from '../types/errorMessage';
 
 export class AppError extends Error {
   public readonly statusCode: number;
@@ -26,57 +26,65 @@ export class AppError extends Error {
   private static getDefaultStatusCode(errorMessage: ErrorMessage): number {
     switch (errorMessage) {
       // 400 Bad Request
-      case 'Error logging out':
-      case 'Invalid request':
-      case 'Missing required fields':
-      case 'Invalid data format':
-      case 'Invalid request format':
-      case 'Unsupported media type':
-      case 'Too many parameters':
-      case 'Invalid query parameters':
-      case 'Cart creation failed':
+      case ERROR.errorLoggingOut:
+      case ERROR.invalidRequest:
+      case ERROR.missingRequiredFields:
+      case ERROR.invalidDataFormat:
+      case ERROR.invalidRequestFormat:
+      case ERROR.unsupportedMediaType:
+      case ERROR.tooManyParameters:
+      case ERROR.invalidQueryParameters:
+      case ERROR.cartCreationFailed:
         return 400;
 
       // 401 Unauthorized
-      case 'Unauthorized':
-      case 'Invalid password':
-      case 'Invalid token':
-      case 'Token expired':
-      case 'Missing token':
-      case 'Invalid credentials':
+      case ERROR.unauthorized:
+      case ERROR.invalidPassword:
+      case ERROR.invalidToken:
+      case ERROR.tokenExpired:
+      case ERROR.missingToken:
+      case ERROR.invalidCredentials:
         return 401;
 
       // 403 Forbidden
-      case 'Forbidden':
-      case 'Insufficient permissions':
-      case 'Access denied':
+      case ERROR.forbidden:
+      case ERROR.insufficientPermissions:
+      case ERROR.accessDenied:
         return 403;
 
       // 404 Not Found
-      case 'User not found':
-      case 'Resource not found':
-      case 'Cart not found':
-      case 'Product not found':
+      case ERROR.userNotFound:
+      case ERROR.resourceNotFound:
+      case ERROR.cartNotFound:
+      case ERROR.productNotFound:
         return 404;
 
       // 409 Conflict
-      case 'User already exists':
-      case 'Email already in use':
-      case 'Resource already exists':
+      case ERROR.userAlreadyExists:
+      case ERROR.emailAlreadyInUse:
+      case ERROR.resourceAlreadyExists:
+      case ERROR.foreignKeyConstraintFailed:
         return 409;
 
       // 422 Unprocessable Entity
-      case 'Validation error':
-      case 'Invalid email format':
-      case 'Password too weak':
+      case ERROR.validationError:
+      case ERROR.invalidEmailFormat:
+      case ERROR.passwordTooWeak:
         return 422;
 
       // 429 Too Many Requests
-      case 'Too many requests':
-      case 'Rate limit exceeded':
+      case ERROR.tooManyRequests:
+      case ERROR.rateLimitExceeded:
         return 429;
 
-      // Valeur par défaut en cas de non correspondance
+      // 500 Internal Server Error
+      case ERROR.internalServerError:
+      case ERROR.databaseConnectionError:
+      case ERROR.fileUploadError:
+      case ERROR.fileDeletionError:
+      case ERROR.fileReadError:
+      case ERROR.fileWriteError:
+      case ERROR.genericError:
       default:
         return 500;
     }
