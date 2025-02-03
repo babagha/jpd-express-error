@@ -1,6 +1,6 @@
 {
   "name": "jpd-express-error",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A utility package for managing standardized error handling in Express microservices with strong typing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,10 +21,14 @@
   "author": "Jonathan Podvin",
   "license": "ISC",
   "peerDependencies": {
-    "express": ">=4.17.3"
+    "express": ">=4.17.3",
+    "@prisma/client": ">=6.3.0"
   },
   "peerDependenciesMeta": {
     "express": {
+      "optional": true
+    },
+    "@prisma/client": {
       "optional": true
     }
   },

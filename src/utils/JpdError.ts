@@ -1,11 +1,11 @@
 import { ERROR, ErrorMessage } from '../types/errorMessage';
 
-export class AppError extends Error {
+export class JpdError extends Error {
   public readonly statusCode: number;
   public readonly errorMessage: ErrorMessage;
 
   /**
-   * Creates an instance of AppError.
+   * Creates an instance of JpdError.
    *
    * @param {ErrorMessage} errorMessage - The predefined error message.
    * @param {number} [statusCode] - Optional HTTP status code. If not provided, a default value is determined based on the error message.
@@ -13,7 +13,7 @@ export class AppError extends Error {
   constructor(errorMessage: ErrorMessage, statusCode?: number) {
     super(errorMessage);
     this.errorMessage = errorMessage;
-    this.statusCode = statusCode || AppError.getDefaultStatusCode(errorMessage);
+    this.statusCode = statusCode || JpdError.getDefaultStatusCode(errorMessage);
     Error.captureStackTrace(this, this.constructor);
   }
 

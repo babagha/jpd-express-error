@@ -1,17 +1,13 @@
 # jpd-express-error
 
-**jpd-express-error** is a lightweight utility package designed to standardize error handling in Express microservices.  
-It ensures consistent error responses, typed messages, and structured error propagation across your services.
+jpd-express-error is a library for Express.js that provides standardized error handling for microservices.
 
-
----
-
-
-## Features
-- **Typed Messages** → Success and error messages are strongly typed for better maintainability.
-- **Standardized API Responses** → Ensures uniform response structures across all services.
-- **Custom Error Handling** → Provides a centralized `AppError` class for better error propagation.
-- **Express & Microservices-Friendly** → Built to simplify error management in Express applications.
+It includes:
+	•	A middleware errorHandler to catch and format errors.
+	•	An JpdError class to throw custom errors with HTTP status codes.
+	•	A JpdResponse class to structure API responses.
+	•	Built-in handling for Prisma errors (P2002, P2025, etc.).
+	•	Dev/Prod distinction to return detailed messages in development and generic messages in production.
 
 
 ---
@@ -29,67 +25,48 @@ npm install jpd-express-error
 
 ## Usage  
 
-### Handling success responses or throw an error
+### Registering the errorHandler middleware
 
-Use `ApiResponse.success()` to return a standardized success response. 
-Use `handleError();` to return a standardized error response.   
+In your app.ts, add the errorHandler middleware after all routes: 
 
 
 ```ts
-/*
-  Controller
-*/
-import { Request, Response } from 'express';
-import { handleError, ApiResponse, AppError, SUCCESS, ERROR } from 'jpd-express-error';
-import { createUserService } from '@/services/userService';
+import express from "express";
+import { errorHandler } from "jpd-express-error";
+import router from "./routes";
 
-export const createUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { name, email, password } = req.body;
+const app = express();
+app.use(express.json());
 
-    if (!name || !email || !password) {
-      throw new AppError(ERROR.missingRequiredFields, 400);
-    }
+// Define routes
+app.use("/api", router);
 
-    const userData = { name, email, password };
-    const user = await createUserService(userData);
+// Error handling middleware
+app.use(errorHandler);
 
-    // Send a standardized success response
-    res.status(201).json(ApiResponse.success(SUCCESS.resourceCreatedSuccessfully, user));
-  } catch (error: any) {
-    handleError(error, res);
-  }
-};
-
+// Start server
+app.listen(3000, () => console.log("Server running"));
 ```
 
 
-### Throwing Errors from Database Models  
-
-When an error occurs in the database, use `AppError` to propagate it to the service or controller.  
-The controller will catch the error and format it correctly using `handleError()`.  
+---
 
 
+### Throwing a custom error (JpdError)
 
-#### Example: Throwing an error in a database model  
+You can throw a custom business error inside a controller, service or model : 
 
 ```ts
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { AppError, ERROR } from 'jpd-express-error';
+import { JpdError, ERROR } from "jpd-express-error";
 
-export const store = async (data: Omit<User, "id">): Promise<User> => {
-  try {
-    // Create the resource in the database
-    const response = await prisma.user.create({ data });
-    return response;
-  } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        throw new AppError(ERROR.resourceAlreadyExists, 409);
-      }
-    }
-    throw error;
+const getUser = async (req, res, next) => {
+  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+
+  if (!user) {
+    throw new JpdError(ERROR.userNotFound, 404);
   }
+
+  res.json({ success: true, data: user });
 };
 ```
 
@@ -97,57 +74,119 @@ export const store = async (data: Omit<User, "id">): Promise<User> => {
 ---
 
 
-Available Messages
+### Structuring API responses with JpdResponse
+
+Use JpdResponse to format your API responses : 
+
+```ts
+import { JpdResponse, SUCCESS } from "jpd-express-error";
+
+const createUser = async (req, res) => {
+  const newUser = await prisma.user.create({ data: req.body });
+
+  res.status(201).json(JpdResponse.success(SUCCESS.resourceCreatedSuccessfully, newUser));
+};
+```
+
+
+---
+
+
+### Available Messages
 
 
 ✅ Success Messages
+
 ```ts
 import { SUCCESS } from "jpd-express-error";
 
 SUCCESS.resourceRetrievedSuccessfully
 SUCCESS.resourceUpdatedSuccessfully
-SUCCESS.userLoggedInSuccessfully
+SUCCESS.resourceValidatedSuccessfully
+SUCCESS.resourceCompletedSuccessfully
+SUCCESS.operationSucceeded
+SUCCESS.userLoggedInSuccessfully successfully
+SUCCESS.userLoggedOutSuccessfully successfully
+SUCCESS.userRegisteredSuccessfully
+SUCCESS.profileUpdatedSuccessfully
 SUCCESS.resourceCreatedSuccessfully
-SUCCESS.resourceDeletedSuccessfully
+SUCCESS.resourceDeletedSuccessfully"
 ```
 
 ❌ Error Messages
+
 ```ts
 import { ERROR } from "jpd-express-error";
 
-ERROR.invalidRequest
-ERROR.missingRequiredFields
-ERROR.unauthorized
-ERROR.resourceNotFound
-ERROR.resourceAlreadyExists
-ERROR.internalServerError
+// 400 Bad Request
+ERROR.errorLoggingOut:
+ERROR.invalidRequest:
+ERROR.missingRequiredFields:
+ERROR.invalidDataFormat:
+ERROR.invalidRequestFormat:
+ERROR.unsupportedMediaType:
+ERROR.tooManyParameters:
+ERROR.invalidQueryParameters:
+ERROR.cartCreationFailed:
+// 401 Unauthorized
+ERROR.unauthorized:
+ERROR.invalidPassword:
+ERROR.invalidToken:
+ERROR.tokenExpired:
+ERROR.missingToken:
+ERROR.invalidCredentials:
+// 403 Forbidden
+ERROR.forbidden:
+ERROR.insufficientPermissions:
+ERROR.accessDenied:
+// 404 Not Found
+ERROR.userNotFound:
+ERROR.resourceNotFound:
+ERROR.cartNotFound:
+ERROR.productNotFound:
+// 409 Conflict
+ERROR.userAlreadyExists:
+ERROR.emailAlreadyInUse:
+ERROR.resourceAlreadyExists:
+ERROR.foreignKeyConstraintFailed:
+// 422 Unprocessable Entity
+ERROR.validationError:
+ERROR.invalidEmailFormat:
+ERROR.passwordTooWeak:
+// 429 Too Many Requests
+ERROR.tooManyRequests:
+ERROR.rateLimitExceeded:
+// 500 Internal Server Error
+ERROR.internalServerError:
+ERROR.databaseConnectionError:
+ERROR.fileUploadError:
+ERROR.fileDeletionError:
+ERROR.fileReadError:
+ERROR.fileWriteError:
 ```
 
 
 ---
 
 
-Prisma-Specific Errors
+### Customizing errors
 
-When working with Prisma, you might encounter specific error codes.
-These errors can be caught and handled using AppError for proper error propagation.
+You can add your own errors:
 
-	•	P2002 → Unique constraint failed (e.g., trying to insert a duplicate email).
-	•	P2003 → Foreign key constraint failed (e.g., trying to delete a referenced record).
-	•	P2025 → Record not found (e.g., trying to update or delete a record that does not exist).
-	•	P2014 → Nested delete or disconnect is not allowed if parent record is required.
-	•	P2016 → Query interpretation error (e.g., invalid field or relation used in query).
-	•	P2017 → Related record not found (e.g., relation inconsistency).
-	•	P2018 → Required connected records not found.
-	•	P2022 → Database constraint violation (e.g., check constraint failed).
-	•	P2023 → Invalid database input (e.g., sending incorrect values).
-	•	P2024 → Database connection timeout or issues with the database server.
+```ts
+import { JpdError, ERROR } from "jpd-express-error";
+
+// Adding a custom error
+ERROR.customError = "Custom error message";
+
+throw new JpdError(ERROR.customError, 400);
+```
 
 
 ---
 
 
-Contributing
+### Contributing
 
 Feel free to open issues or contribute by submitting pull requests! 🚀
 
@@ -155,6 +194,6 @@ Feel free to open issues or contribute by submitting pull requests! 🚀
 ---
 
 
-License
+### License
 
 This project is licensed under the ISC License.
