@@ -21,14 +21,18 @@
   "author": "Jonathan Podvin",
   "license": "ISC",
   "peerDependencies": {
-    "express": ">=4.17.3",
-    "@prisma/client": ">=6.3.0"
+    "@prisma/client": "^6.3.0",
+    "axios": "^1.7.9",
+    "express": ">=4.17.3"
   },
   "peerDependenciesMeta": {
     "express": {
       "optional": true
     },
     "@prisma/client": {
+      "optional": true
+    },
+    "axios": {
       "optional": true
     }
   },
