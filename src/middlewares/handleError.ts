@@ -14,6 +14,7 @@ const isDev = process.env.NODE_ENV === 'development';
  * - Logs unknown errors and returns generic messages in production
  */
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
+  console.log('Error from handleError middleware :', err);
   let statusCode: number = 500;
   let message: ErrorMessage = ERROR.genericError;
 
@@ -21,6 +22,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    * Case 1 : handle custom `JpdError`
    */
   if (err instanceof JpdError) {
+    console.log('JpdError instance detected : ', err);
     statusCode = err.statusCode;
     message = err.errorMessage;
 
@@ -96,6 +98,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
      * Case 2 : handle Axios specific errors
      */
   } else if (axios.isAxiosError(err) && err.response) {
+    console.log('Axios Error:', err.response.data);
     statusCode = err.response.status;
     message = err.response.data?.error || ERROR.genericError;
     res.status(statusCode).json(JpdResponse.error(message));
@@ -104,6 +107,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
      * Case 3 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
      */
   } else if (err instanceof PrismaClientKnownRequestError) {
+    console.log('PrismaClientKnownRequestError instance detected : ', err);
     switch (err.code) {
       case 'P2002': // Violation d'unicité
         statusCode = 409;
@@ -126,13 +130,14 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
      * Case 4 : handle Prisma validation errors (`PrismaClientValidationError`)
      */
   } else if (err instanceof PrismaClientValidationError) {
+    console.log('PrismaClientValidationError instance detected : ', err);
     statusCode = 400;
     message = ERROR.invalidDataFormat;
     /**
      * Case 5 : handle unknown errors or unexpected errors
      */
   } else if (err instanceof Error) {
-    console.error('Unknown Error:', err);
+    console.log('Error instance detected : ', err);
     if (!isDev) {
       console.error({
         name: err.name,
