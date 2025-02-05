@@ -7,6 +7,8 @@ import axios from 'axios';
 
 const isDev = process.env.NODE_ENV === 'development';
 
+console.log('error handler middleware loaded');
+
 /**
  * Express middleware to handle application errors consistently.
  * - Handles custom `JpdError`
