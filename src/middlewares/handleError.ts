@@ -17,6 +17,16 @@ console.log('error handler middleware loaded');
  */
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
   console.log('Error from handleError middleware :', err);
+  console.log('Error type:', typeof err);
+  console.log('Error instance:', err instanceof Error);
+
+  // Vérifiez si err est un objet avant d'appeler Object.keys
+  if (typeof err === 'object' && err !== null) {
+    console.log('Error keys:', Object.keys(err));
+  } else {
+    console.log('Error is not an object, cannot retrieve keys.');
+  }
+
   let statusCode: number = 500;
   let message: ErrorMessage = ERROR.genericError;
 
@@ -99,6 +109,20 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     /**
      * Case 2 : handle Axios specific errors
      */
+  } else if (typeof err === 'object' && err !== null && 'status' in err && 'message' in err) {
+    console.log('Custom structured error detected:', err);
+
+    // rebuild the error as a JpdError
+    const reconstructedError = new JpdError(err.message as ErrorMessage, err.status as number);
+
+    statusCode = reconstructedError.statusCode;
+    message = reconstructedError.errorMessage;
+
+    res.status(statusCode).json(JpdResponse.error(message));
+    return;
+    /**
+     * Case 3 : handle Axios specific errors
+     */
   } else if (axios.isAxiosError(err) && err.response) {
     console.log('Axios Error:', err.response.data);
     statusCode = err.response.status;
@@ -106,7 +130,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     res.status(statusCode).json(JpdResponse.error(message));
     return;
     /**
-     * Case 3 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
+     * Case 4 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
      */
   } else if (err instanceof PrismaClientKnownRequestError) {
     console.log('PrismaClientKnownRequestError instance detected : ', err);
@@ -129,14 +153,14 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
         break;
     }
     /**
-     * Case 4 : handle Prisma validation errors (`PrismaClientValidationError`)
+     * Case 5 : handle Prisma validation errors (`PrismaClientValidationError`)
      */
   } else if (err instanceof PrismaClientValidationError) {
     console.log('PrismaClientValidationError instance detected : ', err);
     statusCode = 400;
     message = ERROR.invalidDataFormat;
     /**
-     * Case 5 : handle unknown errors or unexpected errors
+     * Case 6 : handle unknown errors or unexpected errors
      */
   } else if (err instanceof Error) {
     console.log('Error instance detected : ', err);
