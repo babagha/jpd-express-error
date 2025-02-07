@@ -171,7 +171,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
         stack: err.stack,
       });
     }
-    message = isDev ? (err.message as ErrorMessage) : ERROR.genericError;
+    message = isDev ? (err.message as ErrorMessage) : ERROR.internalServerError;
   }
   /**
    * Send the formatted response
