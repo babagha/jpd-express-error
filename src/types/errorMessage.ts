@@ -29,6 +29,7 @@ export const ERROR = {
   resourceAlreadyExists: "Resource already exists",
   foreignKeyConstraintFailed: "Foreign key constraint failed",
   validationError: "Validation error",
+  passwordMismatch: "Password mismatch",
   invalidEmailFormat: "Invalid email format",
   passwordTooWeak: "Password too weak",
   tooManyRequests: "Too many requests",

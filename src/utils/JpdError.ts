@@ -69,6 +69,7 @@ export class JpdError extends Error {
       // 422 Unprocessable Entity
       case ERROR.validationError:
       case ERROR.invalidEmailFormat:
+      case ERROR.passwordMismatch:
       case ERROR.passwordTooWeak:
         return 422;
 

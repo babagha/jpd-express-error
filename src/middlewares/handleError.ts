@@ -83,6 +83,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       // 422 Unprocessable Entity
       case ERROR.validationError:
       case ERROR.invalidEmailFormat:
+      case ERROR.passwordMismatch:
       case ERROR.passwordTooWeak:
         res.status(422).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.validationError));
         return;
