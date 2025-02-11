@@ -31,10 +31,10 @@ export class JpdError extends Error {
       case ERROR.missingRequiredFields:
       case ERROR.invalidDataFormat:
       case ERROR.invalidRequestFormat:
-      case ERROR.unsupportedMediaType:
       case ERROR.tooManyParameters:
       case ERROR.invalidQueryParameters:
       case ERROR.cartCreationFailed:
+
         return 400;
 
       // 401 Unauthorized
@@ -57,6 +57,7 @@ export class JpdError extends Error {
       case ERROR.resourceNotFound:
       case ERROR.cartNotFound:
       case ERROR.productNotFound:
+      case ERROR.fileNotFound:
         return 404;
 
       // 409 Conflict
@@ -64,7 +65,17 @@ export class JpdError extends Error {
       case ERROR.emailAlreadyInUse:
       case ERROR.resourceAlreadyExists:
       case ERROR.foreignKeyConstraintFailed:
+      case ERROR.fileAlreadyExists:
         return 409;
+
+      // 413 Payload Too Large
+      case ERROR.fileTooLarge:
+        return 413;
+
+      // 415 Unsupported Media Type
+      case ERROR.unsupportedMediaType:
+      case ERROR.invalidFileFormat:
+        return 415;
 
       // 422 Unprocessable Entity
       case ERROR.validationError:
@@ -85,7 +96,11 @@ export class JpdError extends Error {
       case ERROR.fileDeletionError:
       case ERROR.fileReadError:
       case ERROR.fileWriteError:
+      case ERROR.fileProcessingError:
+      case ERROR.fileStorageError:
       case ERROR.genericError:
+        return 500;
+
       default:
         return 500;
     }

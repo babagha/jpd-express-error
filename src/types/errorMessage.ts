@@ -40,7 +40,13 @@ export const ERROR = {
   fileDeletionError: "File deletion error",
   fileReadError: "File read error",
   fileWriteError: "File write error",
-  genericError: "An error occurred while processing your request"
+  fileTooLarge: "File size exceeds the allowed limit",
+  invalidFileFormat: "Invalid file format",
+  fileNotFound: "File not found",
+  fileStorageError: "Error storing the file",
+  fileProcessingError: "Error processing the file",
+  fileAlreadyExists: "File with the same name already exists",
+  genericError: "An error occurred while processing your request",
 } as const;
 
 /**
