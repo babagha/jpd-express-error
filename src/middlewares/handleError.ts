@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const isDev = process.env.NODE_ENV === 'development';
 
-console.log('error handler middleware loaded');
+
 
 /**
  * Express middleware to handle application errors consistently.
@@ -20,7 +20,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
   console.log('Error type:', typeof err);
   console.log('Error instance:', err instanceof Error);
 
-  // Vérifiez si err est un objet avant d'appeler Object.keys
+  // Check if err is an object before calling Object.keys
   if (typeof err === 'object' && err !== null) {
     console.log('Error keys:', Object.keys(err));
   } else {
@@ -31,7 +31,95 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
   let message: ErrorMessage = ERROR.genericError;
 
   /**
-   * Case 1 : handle custom `JpdError`
+  * Case 1 : handle Axios specific errors
+  */
+  if (axios.isAxiosError(err) && err.response) {
+    console.log('Axios Error:', err.response.data);
+    statusCode = err.response.status;
+    message = err.response.data?.error || ERROR.genericError;
+    res.status(statusCode).json(JpdResponse.error(message));
+    return;
+  }
+
+  /**
+   * Case 2 : handle SyntaxError (e.g., JSON parsing errors)
+   */
+  if (err instanceof SyntaxError) {
+    console.log('SyntaxError detected : ', err);
+    statusCode = 400;
+    message = ERROR.invalidRequest;
+    res.status(statusCode).json(JpdResponse.error(message));
+    return;
+  }
+
+  /**
+   * Case 3 : handle TypeError (e.g., accessing undefined properties)
+   */
+  if (err instanceof TypeError) {
+    console.log('TypeError detected : ', err);
+    statusCode = 400;
+    message = ERROR.invalidRequest;
+    res.status(statusCode).json(JpdResponse.error(message));
+    return;
+  }
+
+  /**
+   * Case 4 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
+   */
+  if (err instanceof PrismaClientKnownRequestError) {
+    console.log('PrismaClientKnownRequestError instance detected : ', err);
+    switch (err.code) {
+      case 'P2002': // Unique constraint failed
+        statusCode = 409;
+        message = ERROR.resourceAlreadyExists;
+        break;
+      case 'P2016': // Record does not exist
+        statusCode = 404;
+        message = ERROR.resourceNotFound;
+        break;
+      case 'P2025': // Record not found
+        statusCode = 404;
+        message = ERROR.resourceNotFound;
+        break;
+      case 'P2003': // Foreign key constraint failed
+        statusCode = 409;
+        message = ERROR.foreignKeyConstraintFailed;
+        break;
+      case 'P2014': // Cascade delete constraint failed
+        statusCode = 409;
+        message = ERROR.cascadeDeleteConstraintFailed;
+        break;
+      case 'P2019': // Input error (ex: type incorrect en entrée)
+        statusCode = 400;
+        message = ERROR.invalidDataFormat;
+        break;
+      case 'P2000': // Value too long for a field
+        statusCode = 400;
+        message = ERROR.valueTooLong;
+        break;
+      case 'P2015': // Relation constraint failure
+        statusCode = 400;
+        message = ERROR.invalidRelationConstraint;
+        break;
+      case 'P2020': // Value out of range
+        statusCode = 400;
+        message = ERROR.valueOutOfRange;
+        break;
+      case 'P2034': // Constraint violation on delete
+        statusCode = 409;
+        message = ERROR.constraintViolation;
+        break;
+      default:
+        console.error('Unhandled Prisma Error:', err);
+        message = isDev ? (err.message as ErrorMessage) : ERROR.internalServerError;
+        break;
+    }
+    res.status(statusCode).json(JpdResponse.error(message));
+    return;
+  }
+
+  /**
+   * Case 5 : handle custom `JpdError`
    */
   if (err instanceof JpdError) {
     console.log('JpdError instance detected : ', err);
@@ -51,6 +139,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       case ERROR.cartCreationFailed:
         res.status(400).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.genericError));
         return;
+
       // 401 Unauthorized
       case ERROR.unauthorized:
       case ERROR.invalidPassword:
@@ -60,12 +149,14 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       case ERROR.invalidCredentials:
         res.status(401).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.unauthorized));
         return;
+
       // 403 Forbidden
       case ERROR.forbidden:
       case ERROR.insufficientPermissions:
       case ERROR.accessDenied:
         res.status(403).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.forbidden));
         return;
+
       // 404 Not Found
       case ERROR.userNotFound:
       case ERROR.resourceNotFound:
@@ -73,13 +164,21 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       case ERROR.productNotFound:
         res.status(404).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.resourceNotFound));
         return;
+
       // 409 Conflict
       case ERROR.userAlreadyExists:
       case ERROR.emailAlreadyInUse:
       case ERROR.resourceAlreadyExists:
+      case ERROR.fileAlreadyExists:
       case ERROR.foreignKeyConstraintFailed:
         res.status(409).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.resourceAlreadyExists));
         return;
+
+      // 413 Payload Too Large
+      case ERROR.fileTooLarge:
+        res.status(413).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.fileTooLarge));
+        return;
+
       // 422 Unprocessable Entity
       case ERROR.validationError:
       case ERROR.invalidEmailFormat:
@@ -87,11 +186,13 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       case ERROR.passwordTooWeak:
         res.status(422).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.validationError));
         return;
+
       // 429 Too Many Requests
       case ERROR.tooManyRequests:
       case ERROR.rateLimitExceeded:
         res.status(429).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.tooManyRequests));
         return;
+
       // 500 Internal Server Error
       case ERROR.internalServerError:
       case ERROR.databaseConnectionError:
@@ -101,79 +202,22 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       case ERROR.fileWriteError:
         res.status(500).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.internalServerError));
         return;
+
       // 500 Internal Server Error (default case)
       case ERROR.genericError:
       default:
         res.status(statusCode).json(JpdResponse.error(isDev ? message : ERROR.genericError));
         return;
     }
-    /**
-     * Case 2 : handle Axios specific errors
-     */
-  } else if (typeof err === 'object' && err !== null && 'status' in err && 'message' in err) {
-    console.log('Custom structured error detected:', err);
-
-    // rebuild the error as a JpdError
-    const reconstructedError = new JpdError(err.message as ErrorMessage, err.status as number);
-
-    statusCode = reconstructedError.statusCode;
-    message = reconstructedError.errorMessage;
-
-    res.status(statusCode).json(JpdResponse.error(message));
-    return;
-    /**
-     * Case 3 : handle Axios specific errors
-     */
-  } else if (axios.isAxiosError(err) && err.response) {
-    console.log('Axios Error:', err.response.data);
-    statusCode = err.response.status;
-    message = err.response.data?.error || ERROR.genericError;
-    res.status(statusCode).json(JpdResponse.error(message));
-    return;
-    /**
-     * Case 4 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
-     */
-  } else if (err instanceof PrismaClientKnownRequestError) {
-    console.log('PrismaClientKnownRequestError instance detected : ', err);
-    switch (err.code) {
-      case 'P2002': // Violation d'unicité
-        statusCode = 409;
-        message = ERROR.resourceAlreadyExists;
-        break;
-      case 'P2025': // Ressource inexistante
-        statusCode = 404;
-        message = isDev ? ERROR.resourceNotFound : ERROR.genericError;
-        break;
-      case 'P2003': // Violation de clé étrangère
-        statusCode = 409;
-        message = ERROR.foreignKeyConstraintFailed;
-        break;
-      default:
-        console.error('Unhandled Prisma Error:', err);
-        message = isDev ? (err.message as ErrorMessage) : ERROR.internalServerError;
-        break;
-    }
-    /**
-     * Case 5 : handle Prisma validation errors (`PrismaClientValidationError`)
-     */
-  } else if (err instanceof PrismaClientValidationError) {
-    console.log('PrismaClientValidationError instance detected : ', err);
-    statusCode = 400;
-    message = ERROR.invalidDataFormat;
-    /**
-     * Case 6 : handle unknown errors or unexpected errors
-     */
-  } else if (err instanceof Error) {
-    console.log('Error instance detected : ', err);
-    if (!isDev) {
-      console.error({
-        name: err.name,
-        message: err.message,
-        stack: err.stack,
-      });
-    }
-    message = isDev ? (err.message as ErrorMessage) : ERROR.internalServerError;
   }
+
+  /**
+   * Check if the error already has a `statusCode` before using 500
+   */
+  if (typeof err === 'object' && err !== null && 'statusCode' in err) {
+    statusCode = (err as any).statusCode || 500;
+  }
+
   /**
    * Send the formatted response
    */

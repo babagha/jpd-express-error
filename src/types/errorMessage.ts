@@ -14,6 +14,9 @@ export const ERROR = {
   unauthorized: "Unauthorized",
   invalidPassword: "Invalid password",
   invalidToken: "Invalid token",
+  invalidSyntax: "Invalid request syntax",
+  invalidRelationConstraint: "Invalid relation constraint",
+  invalidType: "Invalid data type",
   tokenExpired: "Token expired",
   missingToken: "Missing token",
   invalidCredentials: "Invalid credentials",
@@ -46,6 +49,10 @@ export const ERROR = {
   fileStorageError: "Error storing the file",
   fileProcessingError: "Error processing the file",
   fileAlreadyExists: "File with the same name already exists",
+  cascadeDeleteConstraintFailed: "Cascade delete constraint failed",
+  valueTooLong: "Value too long for the field",
+  valueOutOfRange: "Value out of range",
+  constraintViolation: "Constraint violation",
   genericError: "An error occurred while processing your request",
 } as const;
 

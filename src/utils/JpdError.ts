@@ -34,7 +34,6 @@ export class JpdError extends Error {
       case ERROR.tooManyParameters:
       case ERROR.invalidQueryParameters:
       case ERROR.cartCreationFailed:
-
         return 400;
 
       // 401 Unauthorized
