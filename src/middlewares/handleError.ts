@@ -16,16 +16,16 @@ const isDev = process.env.NODE_ENV === 'development';
  * - Logs unknown errors and returns generic messages in production
  */
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
-  console.log('Error from handleError middleware :', err);
-  console.log('Error type:', typeof err);
-  console.log('Error instance:', err instanceof Error);
+  // console.log('Error from handleError middleware :', err);
+  // console.log('Error type:', typeof err);
+  // console.log('Error instance:', err instanceof Error);
 
   // Check if err is an object before calling Object.keys
-  if (typeof err === 'object' && err !== null) {
-    console.log('Error keys:', Object.keys(err));
-  } else {
-    console.log('Error is not an object, cannot retrieve keys.');
-  }
+  // if (typeof err === 'object' && err !== null) {
+  //   console.log('Error keys:', Object.keys(err));
+  // } else {
+  //   console.log('Error is not an object, cannot retrieve keys.');
+  // }
 
   let statusCode: number = 500;
   let message: ErrorMessage = ERROR.genericError;
@@ -34,7 +34,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
   * Case 1 : handle Axios specific errors
   */
   if (axios.isAxiosError(err) && err.response) {
-    console.log('Axios Error:', err.response.data);
+    // console.log('Axios Error:', err.response.data);
     statusCode = err.response.status;
     message = err.response.data?.error || ERROR.genericError;
     res.status(statusCode).json(JpdResponse.error(message));
@@ -45,7 +45,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    * Case 2 : handle SyntaxError (e.g., JSON parsing errors)
    */
   if (err instanceof SyntaxError) {
-    console.log('SyntaxError detected : ', err);
+    // console.log('SyntaxError detected : ', err);
     statusCode = 400;
     message = ERROR.invalidRequest;
     res.status(statusCode).json(JpdResponse.error(message));
@@ -56,7 +56,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    * Case 3 : handle TypeError (e.g., accessing undefined properties)
    */
   if (err instanceof TypeError) {
-    console.log('TypeError detected : ', err);
+    // console.log('TypeError detected : ', err);
     statusCode = 400;
     message = ERROR.invalidRequest;
     res.status(statusCode).json(JpdResponse.error(message));
@@ -67,7 +67,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    * Case 4 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
    */
   if (err instanceof PrismaClientKnownRequestError) {
-    console.log('PrismaClientKnownRequestError instance detected : ', err);
+    // console.log('PrismaClientKnownRequestError instance detected : ', err);
     switch (err.code) {
       case 'P2002': // Unique constraint failed
         statusCode = 409;
@@ -122,7 +122,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    * Case 5 : handle custom `JpdError`
    */
   if (err instanceof JpdError) {
-    console.log('JpdError instance detected : ', err);
+    // console.log('JpdError instance detected : ', err);
     statusCode = err.statusCode;
     message = err.errorMessage;
 
