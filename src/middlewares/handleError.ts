@@ -4,6 +4,7 @@ import { ERROR, ErrorMessage } from '../types/errorMessage';
 import { JpdError } from '../utils/JpdError';
 import { JpdResponse } from '../utils/jpdResponse';
 import axios from 'axios';
+import { ZodError } from "zod";
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -209,6 +210,21 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
         res.status(statusCode).json(JpdResponse.error(isDev ? message : ERROR.genericError));
         return;
     }
+  }
+
+  /**
+   * Case 6 : handle Zod validation errors
+   */
+  if (err instanceof ZodError) {
+    // console.log("ZodError detected: ", err);
+    statusCode = 400;
+    const formattedErrors = (err as ZodError).errors.map((issue: ZodError['errors'][number]) => ({
+      path: issue.path.join("."),
+      message: issue.message,
+    }));
+
+    res.status(statusCode).json(JpdResponse.error(ERROR.invalidDataFormat, formattedErrors));
+    return;
   }
 
   /**
