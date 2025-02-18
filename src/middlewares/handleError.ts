@@ -17,23 +17,30 @@ const isDev = process.env.NODE_ENV === 'development';
  * - Logs unknown errors and returns generic messages in production
  */
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
-  // console.log('Error from handleError middleware :', err);
-  // console.log('Error type:', typeof err);
-  // console.log('Error instance:', err instanceof Error);
+
+  console.log('--------------------------------');
+
+  console.log('Error from handleError middleware :', err);
+  console.log('Error type:', typeof err);
+  console.log('Error instance:', err instanceof Error);
 
   // Check if err is an object before calling Object.keys
-  // if (typeof err === 'object' && err !== null) {
-  //   console.log('Error keys:', Object.keys(err));
-  // } else {
-  //   console.log('Error is not an object, cannot retrieve keys.');
-  // }
+  if (typeof err === 'object' && err !== null) {
+    console.log('Error keys:', Object.keys(err));
+  } else {
+    console.log('Error is not an object, cannot retrieve keys.');
+  }
 
   let statusCode: number = 500;
   let message: ErrorMessage = ERROR.genericError;
 
+  console.log('--------------------------------');
+
+
+
   /**
-  * Case 1 : handle Axios specific errors
-  */
+   * Axios specific errors
+   */
   if (axios.isAxiosError(err) && err.response) {
     // console.log('Axios Error:', err.response.data);
     statusCode = err.response.status;
@@ -42,8 +49,10 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     return;
   }
 
+
+
   /**
-   * Case 2 : handle SyntaxError (e.g., JSON parsing errors)
+   * SyntaxError (e.g., JSON parsing errors)
    */
   if (err instanceof SyntaxError) {
     // console.log('SyntaxError detected : ', err);
@@ -53,8 +62,10 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     return;
   }
 
+
+
   /**
-   * Case 3 : handle TypeError (e.g., accessing undefined properties)
+   * TypeError (e.g., accessing undefined properties)
    */
   if (err instanceof TypeError) {
     // console.log('TypeError detected : ', err);
@@ -64,8 +75,10 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     return;
   }
 
+
+
   /**
-   * Case 4 : handle Prisma specific errors (`PrismaClientKnownRequestError`)
+   * Prisma specific errors (`PrismaClientKnownRequestError`)
    */
   if (err instanceof PrismaClientKnownRequestError) {
     // console.log('PrismaClientKnownRequestError instance detected : ', err);
@@ -119,8 +132,20 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     return;
   }
 
+
+
   /**
-   * Case 5 : handle custom `JpdError`
+   * Zod validation errors
+   */
+  if (err instanceof ZodError) {
+    res.status(400).json(JpdResponse.error(isDev ? ERROR.invalidDataFormat : ERROR.genericError));
+    return;
+  }
+
+
+
+  /**
+   * Custom `JpdError`
    */
   if (err instanceof JpdError) {
     // console.log('JpdError instance detected : ', err);
@@ -210,14 +235,6 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
         res.status(statusCode).json(JpdResponse.error(isDev ? message : ERROR.genericError));
         return;
     }
-  }
-
-  /**
-   * Case 6 : handle Zod validation errors
-   */
-  if (err instanceof ZodError) {
-    res.status(400).json(JpdResponse.error(isDev ? ERROR.invalidDataFormat : ERROR.genericError));
-    return;
   }
 
   /**
