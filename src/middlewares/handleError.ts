@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { ERROR, ErrorMessage } from '../types/errorMessage';
 import { JpdError } from '../utils/JpdError';
-import { Response as JpdResponse } from '../utils/Response';
+import { JpdResponse } from '../utils/JpdResponse';
 import axios from 'axios';
 import { ZodError } from "zod";
 

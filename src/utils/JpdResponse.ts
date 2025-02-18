@@ -1,7 +1,7 @@
 import { SuccessMessage } from "../types/successMessage";
 import { ErrorMessage } from "../types/errorMessage";
 
-export class Response<T = any> {
+export class JpdResponse<T = any> {
   public success: boolean;
   public message: SuccessMessage | ErrorMessage;
   public data: T | null;
@@ -9,7 +9,7 @@ export class Response<T = any> {
 
 
   /**
-   * Constructor for the Response class.
+   * Constructor for the JpdResponse class.
    *
    * @param {boolean} success - Indicates if the operation was successful.
    * @param {SuccessMessage | ErrorMessage} message - A message describing the operation.
@@ -29,10 +29,10 @@ export class Response<T = any> {
    *
    * @param {SuccessMessage} message - A message describing the success (typed as SuccessMessage).
    * @param {T} [data] - An optional payload with additional data.
-   * @returns {Response<T>} A Response object indicating success.
+   * @returns {JpdResponse<T>} A JpdResponse object indicating success.
    */
-  static success<T>(message: SuccessMessage, data?: T): Response<T> {
-    return new Response<T>(true, message, data);
+  static success<T>(message: SuccessMessage, data?: T): JpdResponse<T> {
+    return new JpdResponse<T>(true, message, data);
   }
 
 
@@ -42,9 +42,9 @@ export class Response<T = any> {
    *
    * @param {ErrorMessage} message - A message describing the error (typed as ErrorMessage).
    * @param {T} [data] - An optional payload with additional information about the error.
-   * @returns {Response<T>} A Response object indicating an error.
+   * @returns {JpdResponse<T>} A JpdResponse object indicating an error.
    */
-  static error<T>(message: ErrorMessage, data?: T): Response<T> {
-    return new Response<T>(false, message, data);
+  static error<T>(message: ErrorMessage, data?: T): JpdResponse<T> {
+    return new JpdResponse<T>(false, message, data);
   }
 }
