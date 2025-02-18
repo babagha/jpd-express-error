@@ -216,14 +216,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    * Case 6 : handle Zod validation errors
    */
   if (err instanceof ZodError) {
-    // console.log("ZodError detected: ", err);
-    statusCode = 400;
-    const formattedErrors = (err as ZodError).errors.map((issue: ZodError['errors'][number]) => ({
-      path: issue.path.join("."),
-      message: issue.message,
-    }));
-
-    res.status(statusCode).json(JpdResponse.error(ERROR.invalidDataFormat, formattedErrors));
+    res.status(400).json(JpdResponse.error(isDev ? ERROR.invalidDataFormat : ERROR.genericError));
     return;
   }
 
