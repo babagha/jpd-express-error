@@ -168,6 +168,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
       case ERROR.resourceNotFound:
       case ERROR.cartNotFound:
       case ERROR.productNotFound:
+      case ERROR.fileNotFound:
         res.status(404).json(JpdResponse.error(isDev ? err.message as ErrorMessage : ERROR.resourceNotFound));
         return;
 
